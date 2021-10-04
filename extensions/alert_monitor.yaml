@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zen-alert-monitor-extensions
+  labels:
+    icpdata_addon: "true"
+    icpdata_version: "1.0"
+data:
+  extensions: |
+      [
+      {
+          "extension_point_id": "zen_alert_monitor",
+          "extension_name": "zen_alert_monitor_sample",
+          "display_name": "Sample alert monitor",
+          "details": {
+            "name":"sample-monitor",
+            "image": "<docker-registry>/<image-name>:<image-tag>",
+            "schedule": "*/10 * * * *",
+            "event_types": [
+              {
+                "name": "check-pvc-status",
+                "alert_type": "platform",
+                "purge_frequency": 3,
+                "description": "Unbound or failed PVC.",
+                "resolution": "Check PVC logs."
+              }
+            ]
+          }
+        }
+      ]
