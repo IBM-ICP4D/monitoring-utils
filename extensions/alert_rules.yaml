@@ -1,0 +1,27 @@
+  extensions: |
+    [
+      {
+        "extension_point_id": "zen_alert_type",
+        "extension_name": "zen_alert_type_platform",
+        "display_name": "Platform alert type",
+        "details": {
+          "name": "platform",
+          "description": "defines rules for alerting on diagnostics monitors",
+          "rules": {
+            "critical": { 
+              "trigger_type": "custom",
+              "alert_count": 3,
+              "alert_over_count": 3,
+              "snooze_time": 12,
+              "notify_when_condition_clears": true
+            }, 
+            "warning": { 
+              "trigger_type": "custom",
+              "alert_count": 5,
+              "alert_over_count": 20,
+              "snooze_time": 24
+            }
+          }
+        }
+      }
+    ]

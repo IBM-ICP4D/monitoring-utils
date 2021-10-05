@@ -1,0 +1,20 @@
+  extensions: |
+    [
+      {
+        "extension_point_id": "zen_alert_profile",
+        "extension_name": "zen_alert_profile_default",
+        "display_name": "Default alert profile",
+        "details": {
+          "name": "default",
+          "description": "Default alert profile which enables all possible alerts, as long as the respective configuration details are provided via endpoints.",
+          "alerts": {
+            "smtp": true,
+            "snmp": true,
+            "slack": true
+          },
+          "smtp":{
+            "registered_email_ids": []
+          }
+        }
+      }
+    ]
