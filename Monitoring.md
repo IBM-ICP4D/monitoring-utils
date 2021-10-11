@@ -3,6 +3,8 @@
 
 IBM Cloud Pak for Data provides a monitoring and alerting framework that you can use to monitor the state of the platform and set up events to alert based on thresholds.
 
+![Overview](overview.png)
+
 # Glossary
 
 ### Event
@@ -53,8 +55,6 @@ As mentioned earlier, Monitors check the state of event types(resources) periodi
 
 Monitors can be registered into  Cloud Pak for Data  through an extension  configmap. The  configmap  has all the details that are needed to create a cron job, including the details of the script, the image to be used, the schedule for the cron job, and any environment variables. This ensures that the alerting framework has all the necessary information to create a cron job, monitor events frequently, and trigger alerts if and when needed.
 
-Check the doc for 
-
 # Alert Type
 
 You can enable alerts for critical and warning events and define when to forward a certain alert to the user. You can set the throttle time so users are not spammed with alerts when an event persists. To change the default alerting rules, you must use the Alerting APIs. 
@@ -86,8 +86,6 @@ Alerts can be sent as email by using SMTP. You can configure a connection to you
 ## SNMP
 
  Alerts can be sent as traps by using SNMP (simple network management protocol). SNMP is a standard protocol for collecting and organizing information about managed devices or services. It exposes management data in the form of variables that are defined in managed information base (MIB) files.
-
-If you already have a trap listener running, you can use the following command to configure the alerting watchdog to use SNMP.
 
 ## Slack 
 

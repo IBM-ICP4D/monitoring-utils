@@ -10,7 +10,7 @@ def main():
     if ns is None:
         ns = ""
     monitor_type = "sample-monitor"
-    event_type = "check-pvc-status"
+    event_type = "check-custom-pvc-status"
 
     # configure client 
     config.load_incluster_config()

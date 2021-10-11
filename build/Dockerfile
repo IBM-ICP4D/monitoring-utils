@@ -1,10 +1,10 @@
 # set base image (host OS)
-FROM python:3.8
-RUN mkdir /pvc-monitor
-# set the working directory in the container
-WORKDIR /pvc-monitor
-ADD . /pvc-monitor
+FROM registry.access.redhat.com/ubi8/python-38
 # install dependencies
+COPY requirements.txt .
+COPY scripts/ /tmp/scripts/
 RUN pip install -r requirements.txt
+
+USER 1001
 # command to run on container start
-CMD [ "python", "./pvc_check.py" ]
+ENTRYPOINT [ "/tmp/scripts/run_scripts.sh" ]

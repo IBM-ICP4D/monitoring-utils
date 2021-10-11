@@ -5,6 +5,8 @@ The intention behind this repo is to help users understand and enhance the monit
 
 This particular readme focuses on setting up custom monitors. It takes you through the complete process of creating and introducing scripts into Cloud Pak for data instance that can monitor and report/persist state information into a time series DB. The Watchdog Alert manager then looks into these events to decide, in conjunction with associated alerting rules, to trigger alerts if needed. We highly recommend you understand the concepts behind the framework before delving further into the custom monitor tutorial.
 
+![Setup](setup.png)
+
 ## Cloud pak for data Monitoring framework concepts
 
 Please refer to the [following doc](Monitoring.md) for extensive information on Monitoring essentials.
@@ -29,20 +31,24 @@ Monitors can be registered into Cloud Pak for Data through an extension configma
 IN PROGRESS:
 Document build script that would create the docker file with the included scripts 
 
-## Step 1: Create a monitoring script 
+## Step 1: Create a script to monitor the resource
 
-You can use this tutorial to build a custom monitor that tracks persistent volume claims and reports events based on the status.
+First step in the process would be to develop a script that helps monitor the resource and send the state of the resource to Influx DB, using a zen-watchdog API.
 
-If a PVC is bound, an info is registered for the PVC. If a PVC is in an unbound or failed state, a critical event is recorded. This monitor is based on Python 3.7 and uses the Kubernetes Python SDK to interact with the cluster.
+The following sample script tracks persistent volume claims and reports events based on the status. If a PVC is bound, an info is registered for the PVC. If a PVC is in an unbound or failed state, a critical event is recorded. This monitor is based on Python 3.7 and uses the Kubernetes Python SDK to interact with the cluster.
 
-The following script uses the in-cluster config to authenticate to Kubernetes and access the resources. By default, you have access to the following volumes:
+The following script uses the in-cluster config to authenticate to Kubernetes and access the resources. 
 
- 1. User-home-pvc 
- 2. Zen-service-broker-secret
+```
+By default, all setups allow access to the following volumes:
+
+ 1. User-home-pvc - location for the scripts under `/user-home/monitoring/scripts`
+ 2. Zen-service-broker-secret - Auth against the zen-watchdog API for sending resource events.
  
-The following environment variables are made available as part of the cron job initialization:
+The following environment variables are also made available as part of the cron job initialization:
 
-**ICPD_CONTROLPLANE_NAMESPACE**: The control plane namespace.
+ICPD_CONTROLPLANE_NAMESPACE - The control plane namespace.
+```
 
 The following Python script lists PVCs and generates events based on their state. All non-bound PVCs are recorded with critical severity. The events are sent as a JSON array to the POST events endpoint, authorized with the service broker token.
 
@@ -86,15 +92,32 @@ if __name__ == '__main__':
 main()
 ```
 
-Please include the above file as part of the scripts folder
+This and all other scripts would need to be part of the `scripts` folder before you start building the docker image.
 
-# Step 2: Docker Image
+# Step 2: Create a Docker Image with the necessary utils
 
-This step involves creating docker image which includes the monitoring scripts under the `scripts` folder and the corresponding packages needed to run the scripts.
+This step involves creating docker image which includes the monitoring scripts localted under the `scripts` folder and also contains the corresponding utils needed to run the scripts.
 
-IN PROGRESS: a build script which runs the docker file. User then needs to push the image to the required docker repository which will be accessible to the CPD instance.
+The dockerfile is located under the `build` folder. It's job is to ensure the following -
 
-# Step 3: Extensions
+1. Ensure all scripts are uploaded to the `user-home/monitoring/scripts` folder
+2. Introduce python and all required packages listed in the `requirements.txt` file
+3. Run the `run_scripts.sh` file on startup. 
+
+To build the docker image, run the following command from inside the `build` directory.
+`docker build .`
+
+This would create the docker ifle 
+
+Once the docker image is ready, it's time to upload it to the registry. The steps to ensure that are as follows:
+
+1. Docker login to the registry
+`docker login <docker-registry>`
+2. Tag the image 
+docker tag <image-digest> <>
+3. Push the image 
+
+# Step 3: Extensions to initialize the monitor
 
 This is the final step in the process. Here we upload the required monitor, alert type and profile extensions that would form the basis of the custom monitor. 
 
