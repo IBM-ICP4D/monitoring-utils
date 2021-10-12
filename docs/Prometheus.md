@@ -67,8 +67,6 @@ What it does: Checks if a PVC is bound. A persistent volume claim (PVC) is a req
 
 Health metric name - _watchdog_diagnostics_check_pvc_status_
 
-Sample:
-
 `watchdog_diagnostics_check_pvc_status{event_type="check-pvc-status",monitor_type="diagnostics",reference="cpd-install-operator-pvc"} 2`
 
 
@@ -81,6 +79,9 @@ Sample:
 **What it does** - Check status of deployment and statefulset replicas. A critical state indicates that the desired replicas state is not being maintained.
 
 **Health metric name** - _watchdog_diagnostics_check_replica_status_
+
+`watchdog_diagnostics_check_replica_status{event_type="check-replica-status",monitor_type="diagnostics",reference="cpd-install-operator"} 2`
+
 
 **Metric values**
 
@@ -187,6 +188,10 @@ What it does: Check status of installed services. A critical state indicates one
 a. _instances_ - Total number of instances provisioned for the service
 
 `instances{event_type="check-service-status",monitor_type="diagnostics",reference="IBM Cloud Pak for Data Control Plane"} 0`
+
+b. _pods_ - Total number of pods associated with the service 
+
+`pods{event_type="check-service-status",monitor_type="diagnostics",reference="IBM Cloud Pak for Data Control Plane"} 34`
 
 
 
