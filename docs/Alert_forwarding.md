@@ -1,1 +1,0 @@
-Document alert forwarding via SMTP, SNMP and Slack
