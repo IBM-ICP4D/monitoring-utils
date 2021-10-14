@@ -90,3 +90,9 @@ Alerts can be sent as email by using SMTP. You can configure a connection to you
 ## Slack 
 
 To enable Slack alerts, an administrator must provide a webhook URL, which can be set up to receive notifications on a channel. When the webhook URL is available, the following information can be provided:
+
+# Prometheus endpoint
+
+The monitored events are exposed in a Prometheus format at the `<cp4d_route>/zen/metrics` endpoint. 
+
+Detailed information on this is available [here](Prometheus.md).

@@ -5,11 +5,11 @@ The intention behind this repo is to help users understand and enhance the monit
 
 This particular readme focuses on setting up custom monitors. It takes you through the complete process of creating and introducing scripts into Cloud Pak for data instance that can monitor and report/persist state information into a time series DB. The Watchdog Alert manager then looks into these events to decide, in conjunction with associated alerting rules, to trigger alerts if needed. We highly recommend you understand the concepts behind the framework before delving further into the custom monitor tutorial.
 
-![Setup](setup.png)
+![Setup](docs/setup.png)
 
 ## Cloud pak for data Monitoring framework concepts
 
-Please refer to the [following doc](Monitoring.md) for extensive information on Monitoring essentials.
+Please refer to the [following doc](docs/Monitoring.md) for extensive information on Monitoring essentials.
 
 ## Questions to consider before you look further
 
