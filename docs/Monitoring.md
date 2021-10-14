@@ -1,11 +1,29 @@
-
+- [Monitoring](#monitoring-and-alerting-in-cloud-pak-for-data)
+- [Glossary](#glossary)
+    - [Event](#event)
+    - [Event type](#event-type)
+    - [Severity](#severity)
+    - [Alert](#alert)
+    - [Alert monitor](#alert-monitor)
+    - [Alert type](#alert-type)
+    - [Alert profile](#alert-profile)
+    - [Watchdog alert manager](#watchdog-alert-manager)
+- [Diagnostics monitor](#diagnostics-monitor)
+- [Monitoring extensions](#monitoring-extensions)
+    - [Alert monitor extension](#alert-monitor-extension)
+    - [Alert type extension](#alert-type-extension)
+    - [Alert profile extension](#alert-profile-extension)
+    - [SMTP](#smtp)
+    - [Slack](#slack)
+    - [SNMP](#snmp)
+- [Prometheus endpoint](#prometheus-endpoint)
 # Monitoring and alerting in Cloud pak for Data
 
 IBM Cloud Pak for Data provides a monitoring and alerting framework that you can use to monitor the state of the platform and set up events to alert based on thresholds.
 
 ![Overview](overview.png)
 
-# Glossary
+## Glossary
 
 ### Event
 An event is the state of an entity such as a pod, persistent volume claim (PVC), or other resource at a certain point in time. 
@@ -20,7 +38,7 @@ Each event is associated with a severity which could be one of Informational, Wa
 Alerts can be configured to be sent based on the above events. For example, an alert can be set to trigger when a pod indicates 3 consecutive critical events. 
 Alerts could also be based on thresholds ( say resource consumption > 75% ). We support SMTP, SNMP(v2) and Slack alert forwarding at this time.
 
-### Monitor
+### Alert Monitor
 A script that is scheduled to run as part of a cronjob which monitors resources and emits events. These events are persisted in a time series DB which is then monitored by the Watchdog Alert Manager(WAM).
 
 ### Alert Type
@@ -29,12 +47,12 @@ Rules for alerting. Can be set to trigger in case of warning or critical events.
 ### Alert Profile
 Enable alert forwarding and associated properties. For example, users can set SMTP to true to receive e-mail alerts and also provide intended recipients to receive the alerts.
 
-### Watchdog Alert manager (WAM)
+### Watchdog Alert manager
 A cronjob that serves 2 purposes -- 
  1. Sets up cronjobs based on *custom monitor extensions*
  2. Monitors events in Influx DB to identify any potential alerts(based on Alert Type) and forwards the alerts based on associated profiles.
 
-# Introduction
+## Diagnostics monitor
 
 Cloud Pak for data installs a *diagnostics* monitor that monitors a few critical resources every 10 mins. These *event types*(resources) being tracked out of the box are as follows:
 
@@ -47,7 +65,11 @@ Cloud Pak for data installs a *diagnostics* monitor that monitors a few critical
 **WAM**(running every 10 mins) then looks at all the events that have been pushed into *Influx DB* to look specifically for *Critical/Warning* events. It then cross checks those events with associated alerting rules for those *event types* and triggers alerts if needed. 
 For example, if the *alert type* for PVC is set to immediate and one of the PVCs were found to be in *critical* state, the **WAM** would trigger alerts as soon as it finds one in *critical* state in Influx DB.
 
-# Custom Monitor
+
+## Monitoring extensions
+
+Custom monitor and profiles can be introduced into the CP4D ecosystem using extensions. Extensions are configmaps containing metadata information that can be leveraged by CP4D microservices. We use this concept to introduce information about Custom monitors, alert types and profiles and then use it as basis for monitoring and alerting purposes. For eg: The type of alert, whether _immediate_ or _custom_, can be set as part of the _alert type_ extension configmap and it dictates how alerts are sent.
+### Alert monitor extension
 
 Developers can set up custom monitors using the alerting framework.
 
@@ -55,7 +77,9 @@ As mentioned earlier, Monitors check the state of event types(resources) periodi
 
 Monitors can be registered into  Cloud Pak for Data  through an extension  configmap. The  configmap  has all the details that are needed to create a cron job, including the details of the script, the image to be used, the schedule for the cron job, and any environment variables. This ensures that the alerting framework has all the necessary information to create a cron job, monitor events frequently, and trigger alerts if and when needed.
 
-# Alert Type
+[Sample for alert monitor](./extensions/alert_monitor.yaml)
+
+### Alert type extension
 
 You can enable alerts for critical and warning events and define when to forward a certain alert to the user. You can set the throttle time so users are not spammed with alerts when an event persists. To change the default alerting rules, you must use the Alerting APIs. 
 
@@ -74,8 +98,9 @@ The default alerting rules are set as follows:
 | **snooze_time** | The number of hours to wait before an alert is sent for the current resource. |
 | **notify_when_condition_clears** | Determines whether to send an alert when the *critical/warning* condition clears, if a previous alert for the critical/warning condition had been sent earlier. |
 
+[Sample for alert type](extensions/alert_rules.yaml)
 
-# Alert Profile
+### Alert profile extension
 
 A default profile is installed when Cloud Pak for Data is installed. Currently, you cannot set up custom alert profiles. Alert forwarding using SMTP, SNMP and Slack is supported. 
 
@@ -91,7 +116,23 @@ Alerts can be sent as email by using SMTP. You can configure a connection to you
 
 To enable Slack alerts, an administrator must provide a webhook URL, which can be set up to receive notifications on a channel. When the webhook URL is available, the following information can be provided:
 
-# Prometheus endpoint
+Reason codes are associated with SNMP to allow for easy recognition. Reason codes are made up of a prefix and a suffix based on the following.
+
+**Prefix** - This is specified for each event type and is identified as part of the alert monitor extension (check [sample](extensions/alert_monitor.yaml))
+
+**Suffix** - This identifies the state of the resource. 
+
+00-information 
+
+01-warning
+
+02-critical
+
+Thus a trap with reason code 102 would mean that a replica (w/prefix=1) is in critical (suffix=02) state.
+
+
+[Sample for alert profile](extensions/alert_profile.yaml)
+## Prometheus endpoint
 
 The monitored events are exposed in a Prometheus format at the `<cp4d_route>/zen/metrics` endpoint. 
 

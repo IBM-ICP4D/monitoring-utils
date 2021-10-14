@@ -1,5 +1,16 @@
+- [Introduction and Purpose](#introduction-and-purpose)
+- [Monitoring concepts](#cloud-pak-for-data-monitoring-framework-concepts)
+- [Questions to consider](#questions-to-consider-before-you-look-further)
+- [Introduce custom monitors](#introduce-custom-monitors) 
+	- [Monitoring Script](#monitoring-script)
+	- [Build Docker image](#build-docker-image)
+	- [Monitoring extensions](#introduce-monitoring-extensions)
 
-## Purpose
+
+
+
+
+## Introduction and Purpose
 
 The intention behind this repo is to help users understand and enhance the monitoring feature by introducing sample scripts through custom monitors which would in turn help proactively address and alert of any potential issues before they turn critical.
 
@@ -31,7 +42,7 @@ Monitors can be registered into Cloud Pak for Data through an extension configma
 IN PROGRESS:
 Document build script that would create the docker file with the included scripts 
 
-## Step 1: Create a script to monitor the resource
+### Monitoring script
 
 First step in the process would be to develop a script that helps monitor the resource and send the state of the resource to Influx DB, using a zen-watchdog API.
 
@@ -82,7 +93,10 @@ for pvc in pvcs.items:
 	print(pvc.status.phase) 
 	if pvc.status.phase != 'Bound': 
 		severity = "critical" 
-	data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":"PVC Bound", "reference":pvc.metadata.name} 
+	#The metadata field needs to be in <key1:value1,key2:vaue2> format to be easily absorbed for prometheus consumption.
+	#The keys(key1,key2) is also referenced as part of the property "long_description" in alert monitor extension to be available for viewing in the UI. Please refer to the 
+	metadata = "Avaialble=10,Unavailable=5"  
+	data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name} 
 	events.append(data) 
 json_string = json.dumps(events) 
 # post call to zen-watchdog to record events 
@@ -94,7 +108,7 @@ main()
 
 This and all other scripts would need to be part of the `scripts` folder before you start building the docker image.
 
-# Step 2: Create a Docker Image with the necessary utils
+### Build Docker image
 
 This step involves creating docker image which includes the monitoring scripts localted under the `scripts` folder and also contains the corresponding utils needed to run the scripts.
 
@@ -117,7 +131,7 @@ Once the docker image is ready, it's time to upload it to the registry. The step
 docker tag <image-digest> <>
 3. Push the image 
 
-# Step 3: Extensions to initialize the monitor
+### Introduce Monitoring extensions
 
 This is the final step in the process. Here we upload the required monitor, alert type and profile extensions that would form the basis of the custom monitor. 
 

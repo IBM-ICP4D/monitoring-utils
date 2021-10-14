@@ -1,14 +1,21 @@
-# Prometheus
+- [Introduction](#introduction)
+- [Access Openshift Prometheus](#access-openshift-prometheus)
+- [Metrics syntax](#metrics-syntax)
+- [Setup Prometheus endpoint scraping](#setup-prometheus-endpoint-scraping)
+- [Diagnostics monitor metrics](#diagnostics-monitor-metrics)
+
+
+## Introduction
 
 Prometheus is an open-source monitoring and alerting framework that is available with Openshift 4.x. You can access Prometheus, the Alerting UI and the Graphana UIs using a Web browser through the Openshift Container Platform web console.
 
-## Procedure to access Openshift Prometheus
+## Access Openshift Prometheus
 
 1.	Navigate to the OpenShift Container Platform Web console and authenticate.
 2.	To access Prometheus, navigate to "Monitoring" → "Metrics".
 To access the Alerting UI, navigate to "Monitoring" → "Alerts" 
 
-## Prometheus metrics syntax 
+## Metrics syntax 
 
 `<metric_name> {<label1>:<value>,<label2>:<value>…} <value_of_metric>`
 
@@ -39,7 +46,7 @@ Sample:
 
 The above references the CPU limit value for the entire platform.
 
-## Setup to enable Prometheus scraping
+## Setup prometheus endpoint scraping
 
 1. **Metrics endpoint**
 
@@ -53,7 +60,7 @@ CPD watchdog would expose a metrics endpoint which would list out all metrics in
 
 [Setup a service monitor](https://github.com/redhat-scholars/openshift-admins-devops/blob/v4.6blog/documentation/modules/ROOT/pages/metrics-alerting.adoc#creating-a-service-monitor)
 
-## Watchdog Diagnostics monitor
+## Diagnostics monitor metrics
 
 There's a default diagnostics monitor that is shipped out of the box with zen. The metrics endpoint is `<CP4D Route>/zen/metrics`
 
@@ -192,6 +199,8 @@ a. _instances_ - Total number of instances provisioned for the service
 b. _pods_ - Total number of pods associated with the service 
 
 `pods{event_type="check-service-status",monitor_type="diagnostics",reference="IBM Cloud Pak for Data Control Plane"} 34`
+
+
 
 
 
