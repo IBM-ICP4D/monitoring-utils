@@ -94,7 +94,7 @@ def get_pvc_claim_name(volumeName, podName, volumesList):
                     podVolumeClaimName=podVolume.persistent_volume_claim.claim_name
                     return podVolumeClaimName
                 else:
-                    return ''
+                    return None
 
 ## Record volume monitoring events into Influx DB through the watchdog post events API
 def record_events(events):

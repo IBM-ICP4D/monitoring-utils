@@ -32,6 +32,7 @@ responses=pUtils.construct_node_response()
 for response in responses:
     print("Reading response ..... ")
     if not pUtils.diff_between_two_lists(allPVCs, volumesList):
+        print("All pvcs covered...")
         break
     print("Reading node response .......................................... ")
     if 'pods' in response:
@@ -60,7 +61,8 @@ for response in responses:
 
                     ## Find out the pvc claim name from the mount name using the pods object
                     podVolumeClaimName=pUtils.get_pvc_claim_name(volumeName, podName, volumesList)
-                    if podVolumeClaimName=='':
+                    print('Pod Volume claim = ', podVolumeClaimName)
+                    if podVolumeClaimName==None:
                         print("Moving on from data for volume ", volumeName)
                         continue
                     volumesList.append(podVolumeClaimName)

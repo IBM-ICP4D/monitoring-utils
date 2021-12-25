@@ -43,8 +43,6 @@ resp = stream(v1.connect_get_namespaced_pod_exec, pod, NAMESPACE,
               stdout=True, tty=False)
 freeString=resp.split()
 
-print("Usage/Free = ", usageString[0], freeString[8])
-
 # configure post request and set secret headers
 url = 'https://zen-watchdog-svc:4444/zen-watchdog/v1/monitoring/events'
 with open('/var/run/sharedsecrets/token', 'r') as file:
@@ -55,7 +53,6 @@ severity = "info"
 usageInt=int(usageString[0])
 freeInt=int(freeString[8])
 usagePct=(usageInt/freeInt)*100
-print("Usage percentage = ", usagePct)
 
 if usagePct>90:
     severity='critical'
