@@ -23,10 +23,9 @@ This step constructs the docker image for the module. It contains any install st
 4. Edit the extensions file under the module/extensions folder
 The extensions file would need to be updated to include certain custom details like image, schedule etc. This would translated into the cronjob settings that would be created to run the monitor.
 
-5.Install the extensions into the control plane namespace
-a. Oc login to the cluster 
+5. Oc login to the cluster 
 
-b. Install the edited extensions yaml located under the module/extensions folder
+6. Install the edited extensions yaml located under the module/extensions folder
 
 `oc apply -f <extension_file>.yaml` 
 
