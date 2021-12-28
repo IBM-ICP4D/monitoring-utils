@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-monitor-extension
+  labels:
+    app: "zen-adv"
+    icpdata_addon: "true"
+    icpdata_addon_version: "4.4.0"
+    release: "zen-adv"
+data:
+  extensions: |
+      [
+      {
+          "extension_point_id": "zen_alert_monitor",
+          "extension_name": "platform_monitor",
+          "display_name": "Platform monitor",
+          "details": {
+            "name":"platform",
+            "image": "image-registry.openshift-image-registry.svc:5000/zen1003/sample-monitor:v107",
+            "schedule": "*/10 * * * *",
+            "event_types": [
+              {
+                "name": "check-volume-status",
+                "simple_name": "Replica status check",
+                "alert_type": "platform",
+                "short_description": "A monitor that checks the status of Deployment replicas and StatefulSet replicas.",
+                "long_description": "Usage: <Usage> | Total: <Total>",
+                "url": "/platformManagement/monitoring/pods",
+                "url_title": "View volume usage", 
+                "web_link": "Check volume usage.",
+                "reason_code_prefix": "11"
+              }
+            ]
+          }
+        }
+      ]
