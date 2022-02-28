@@ -16,15 +16,15 @@ data:
           "display_name": "Platform monitor",
           "details": {
             "name":"platform",
-            "image": "image-registry.openshift-image-registry.svc:5000/zen1003/sample-monitor:v107",
-            "schedule": "*/10 * * * *",
+            "image": "image-registry.openshift-image-registry.svc:5000/zentwo/pvc-monitor:v1",
+            "schedule": "*/3 * * * *",
             "event_types": [
               {
                 "name": "check-volume-status",
-                "simple_name": "Replica status check",
+                "simple_name": "Volume usage status check",
                 "alert_type": "platform",
-                "short_description": "A monitor that checks the status of Deployment replicas and StatefulSet replicas.",
-                "long_description": "Usage: <Usage> | Total: <Total>",
+                "short_description": "Monitors volume usage for PVCs.",
+                "long_description": "Current Usage: <Usage> | Total Usage: <Total> | Usage Percentage: <UsagePct>",
                 "url": "/platformManagement/monitoring/pods",
                 "url_title": "View volume usage", 
                 "web_link": "Check volume usage.",

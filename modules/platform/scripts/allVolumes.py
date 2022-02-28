@@ -1,6 +1,7 @@
 # This program prints Hello, world!
 import os
 import requests
+import math
 import json
 import platformUtils as pUtils
 from requests.structures import CaseInsensitiveDict
@@ -78,8 +79,7 @@ def getAllVolumes():
                             severity='critical'
                         elif usagePct>75:
                             severity='warning'
-
-                        metadata="Usage=%s,Total=%s" % (usedBytes, totalBytes)
+                        metadata="Usage=%s,Total=%s,UsagePct=%s" % (convert_size(usedBytes), convert_size(totalBytes), usagePct)
                         print("Adding data for volume ", volumeName)
                         data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":podVolumeClaimName}
 
@@ -97,6 +97,15 @@ def getAllVolumes():
 
     if not all_events_recorded:
         pUtils.record_events(events)
+
+def convert_size(size_bytes):
+   if size_bytes == 0:
+       return "0B"
+   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   i = int(math.floor(math.log(size_bytes, 1024)))
+   p = math.pow(1024, i)
+   s = round(size_bytes / p, 2)
+   return "%s %s" % (s, size_name[i])
 
 def run():
     getAllVolumes()
