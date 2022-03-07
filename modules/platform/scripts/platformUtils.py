@@ -2,6 +2,7 @@ import os
 import json, requests
 from requests.structures import CaseInsensitiveDict
 from kubernetes import client, config, watch
+import configparser
 
 
 
@@ -119,3 +120,13 @@ def diff_between_two_lists(list1, list2):
 ## Get usage pct
 def get_usage_pct(usage, total):
     usagePct=(usage/total)*100
+
+## Get user defined warning and critical percentages
+def get_percentages():
+    config = configparser.ConfigParser()   
+    config.read("platform.config")
+
+    critical_pct = config.getint('volumes_percentages', 'critical_pct')
+    warning_pct = config.getint('volumes_percentages', 'warning_pct')
+
+    return critical_pct, warning_pct

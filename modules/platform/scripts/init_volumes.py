@@ -5,11 +5,10 @@ import pwxVolumes as pwxUtils
 import configparser
 
 print("Checking type of volume monitoring needed")
-configParser = configparser.RawConfigParser()   
-configFilePath = r'platform.config'
-configParser.read(configFilePath)
+config = configparser.ConfigParser()   
+config.read("platform.config")
 
-volumesType = configParser.get('volumes', 'type')
+volumesType = config.get('volumes', 'type')
 
 print("Volumes = ", volumesType)
 if volumesType == "nfs":
@@ -18,6 +17,6 @@ if volumesType == "nfs":
 elif volumesType == "pwx":
     print("Choosing portworx...")
     pwxUtils.run()
-else:
+elif volumesType == "all":
     print("Choosing all volumes with cluster privilege option...")
     allVolumeUtils.run()

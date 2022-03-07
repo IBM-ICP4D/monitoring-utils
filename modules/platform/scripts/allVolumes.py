@@ -75,9 +75,12 @@ def getAllVolumes():
                         totalBytes=volume["capacityBytes"]
                         usagePct=(usedBytes/totalBytes)*100
                         severity='info'
-                        if usagePct>90:
+                        
+                        critical_pct, warning_pct=pUtils.get_percentages()
+
+                        if usagePct>critical_pct:
                             severity='critical'
-                        elif usagePct>75:
+                        elif usagePct>warning_pct:
                             severity='warning'
                         metadata="Usage=%s,Total=%s,UsagePct=%s" % (convert_size(usedBytes), convert_size(totalBytes), usagePct)
                         print("Adding data for volume ", volumeName)

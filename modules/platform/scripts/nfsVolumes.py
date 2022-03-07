@@ -1,10 +1,10 @@
+
 import os, subprocess
 import requests
 import json
 import platformUtils as pUtils
 from kubernetes import client, config, watch
 from kubernetes.stream import stream
-
 
 def getNFSUsage():
     # Initialize variables
@@ -55,9 +55,11 @@ def getNFSUsage():
     freeInt=int(freeString[8])
     usagePct=(usageInt/freeInt)*100
 
-    if usagePct>90:
+    critical_pct, warning_pct=pUtils.get_percentages()
+
+    if usagePct>critical_pct:
         severity='critical'
-    elif usagePct>75:
+    elif usagePct>warning_pct:
         severity='warning'
     events=[]
     metadata="Usage=%s,Free=%s" % (usageString[0], freeString[8])
