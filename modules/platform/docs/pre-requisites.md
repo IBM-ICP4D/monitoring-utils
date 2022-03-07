@@ -14,7 +14,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - secrets
   - nodes
   - nodes/proxy
   verbs:
@@ -37,7 +36,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: zen-editor-sa
-  namespace: zen1004
+  namespace: <namespace>
   ````
 
   Introducing the two yamls above would ensure that the service account is now able to run the node proxy APIs and fetch summary from all the node kubelets.
