@@ -27,3 +27,8 @@ Please follow the steps in [here](pre-requisites.md) to address the pre-requisit
 Monitoring and Alerting specifically is documented in detail [here](https://github.com/IBM-ICP4D/monitoring-utils/blob/main/docs/Monitoring.md#alert). Please refer to this section to setup alerting rules and forwarding connections including SMTP, SNMP traps and Slack alerts.
 
 Besides Alerting, all monitored resources are also available to view as part of the Cloud Pak for Data Montioring UI. This page will also show you the critical and warning events currently being tracked and alerted on. 
+
+As you can see below, once the above setup is performed and the cronjob has started monitoring the volumes, you should see the list of volume claims with details about the total and percentage use as well as a color coded status on expansion of the volume claim. 
+
+
+![Volumes_Monitoring](monitoring_volumes.png)
