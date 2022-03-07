@@ -1,6 +1,6 @@
-**Setup Cluster role binding to monitor volumes**
+**Volumes Monitoring**
 
-To allow for cluster role access to the zen-editor-sa account, please consider running the following steps:
+If you selected type `all` in platform.config as part of the volumes monitoring, you need to allow the zen-editor-sa account access to certain cluster level APIs to allow it to fetch and monitor information related to persistent volumes. Please follow the steps outlined below in case you want to proceed with it.
 
 1. Create a cluster role that allows accounts to run the node summary API. This can be done using the following snippet.
 
