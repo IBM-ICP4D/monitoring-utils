@@ -1,13 +1,10 @@
 - [Introduction and Purpose](#introduction-and-purpose)
-- [Monitoring concepts](#cloud-pak-for-data-monitoring-framework-concepts)
-- [Questions to consider](#questions-to-consider-before-you-look-further)
-- [Introduce custom monitors](#introduce-custom-monitors) 
-	- [Monitoring Script](#monitoring-script)
+- [Cloud pak for data Monitoring framework concepts](#cloud-pak-for-data-monitoring-framework-concepts)
+- [Questions to consider before you look further](#questions-to-consider-before-you-look-further)
+- [Introduce custom monitors](#introduce-custom-monitors)
+	- [Monitoring script](#monitoring-script)
 	- [Build Docker image](#build-docker-image)
-	- [Monitoring extensions](#introduce-monitoring-extensions)
-
-
-
+	- [Introduce Monitoring extensions](#introduce-monitoring-extensions)
 
 
 ## Introduction and Purpose
