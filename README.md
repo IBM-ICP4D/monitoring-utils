@@ -6,6 +6,7 @@
 	- [Build Docker image](#build-docker-image)
 	- [Introduce Monitoring extensions](#introduce-monitoring-extensions)
 
+
 ## Introduction and Purpose
 
 The intention behind this repo is to help users understand and enhance the monitoring feature by introducing sample scripts through custom monitors which would in turn help proactively address and alert of any potential issues before they turn critical.
