@@ -31,7 +31,7 @@ def getAllVolumes():
     ## Browse through node summary responses
     ## Browse through pods in the namesapce and filter out the volumes that have not been measured yet
     ## Construct the event objects for those volumes
-    ## Record the events in Influx
+    ## Record the events in a database
     for response in responses:
         print("Reading response ..... ")
         if not pUtils.diff_between_two_lists(allPVCs, volumesList):
@@ -91,10 +91,10 @@ def getAllVolumes():
                             continue
                         else:
                             print("All PVCs covered...")
-                            ## Record all events into Influx using the watchdog service
+                            ## Record all events into a database using the watchdog service
                             status_code=pUtils.record_events(events)
                             if status_code==200:
-                                print("Successfully recorded the Volume monitoring events into Influx.")
+                                print("Successfully recorded the Volume monitoring events into a database.")
                                 all_events_recorded=True
                             break
 

@@ -64,7 +64,7 @@ def getNFSUsage():
     events=[]
     metadata="Usage=%s,Free=%s" % (usageString[0], freeString[8])
     data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":"user-home"}
-    print("Data to be input into influx - ", data)
+    print("Data to be input into a database - ", data)
     events.append(data)
     json_string=json.dumps(events)
     statusCode=pUtils.record_events(events)

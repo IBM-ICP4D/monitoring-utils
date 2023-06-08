@@ -1,66 +1,29 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
   name: sample-monitor-extension
-  labels:
-    app: "zen-adv"
-    icpdata_addon: "true"
-    icpdata_addon_version: "4.3.0"
-    release: "zen-adv"
-data:
+  labels: 
+    icpdata_addon: "true" 
+    icpdata_addon_version: "1.0.0" 
+data: 
   extensions: |
       [
-      {
+        {
           "extension_point_id": "zen_alert_monitor",
           "extension_name": "zen_alert_monitor_sample",
           "display_name": "Sample alert monitor",
           "details": {
             "name":"sample-monitor",
-            "image": "image-registry.openshift-image-registry.svc:5000/zen63/sample-monitor:v1",
+            "image": "image-registry.openshift-image-registry.svc:5000/zen/pvc-monitor:latest",
             "schedule": "*/10 * * * *",
             "event_types": [
-                {
-          "extension_point_id": "zen_alert_monitor",
-          "extension_name": "zen_alert_monitor_diagnostics",
-          "display_name": "Diagnostic alert monitor",
-          "details": {
-            "name":"diagnostics",
-            "image": "zen-data-sorcerer",
-            "command": ["/bin/sh", "-c"],
-            "schedule": "*/10 * * * *",
-            "args": ["curl -X GET http://zen-watchdog-svc:3333/zen-watchdog/v1/monitoring/samples/diagnostics"],
-            "event_types": [
               {
-                "name": "check-replica-status",
-                "simple_name": "Replica status check",
+                "name": "check-pvc-bound",
+                "simple_name": "PVC bound check",
                 "alert_type": "platform",
-                "short_description": "A monitor that checks the status of Deployment replicas and StatefulSet replicas.",
-                "long_description": "Available: <Available> | Unavailable: <Unavailable> | Ready: <Ready>",
-                "url": "/platformManagement/monitoring/pods",
-                "url_title": "View pods", 
-                "web_link": "Check pods status and associated events.",
-                "reason_code_prefix": "1"
-              },
-              {
-                "name": "check-pvc-status",
-                "simple_name": "PVC status check",
-                "alert_type": "platform",
-                "short_description": "A monitor that checks whether the persistent volume claim is associated with a storage volume.",
-                "long_description": "A persistent volume claim (PVC) is a request for storage that meets specific criteria, such as a minimum size or a specific access mode. A critical state indicates that the PVC is not associated with a storage volume, which means that the service cannot store data. PVC: <PVC>",
-                "web_link": "Check PVC logs.",
-                "reason_code_prefix": "2"
-              },
-              {
-                "name": "check-quota-status",
-                "simple_name": "Quota status check",
-                "alert_type": "platform",
-                "short_description": "A monitor that checks the status of the vCPU and memory quotas that are set for a service.",
-                "long_description": "An administrator set a vCPU quota and a memory quota for the service or for the platform. A critical state indicates that the service has insufficient resources to fulfill requests. The service cannot create new pods if the new pods will push the service over the memory quota or the vCPU quota. These pods remain in pending state until sufficient resources are available. vCPU requests: <CPU_Requests> | vCPU limits: <CPU_Limits> | vCPU currently in use: <CPU_Utilization> Memory requests: <Memory_Requests> GiB | Memory limits: <Memory_Limits> GiB | Memory currently in use: <Memory_Utilization> GiB",
-                "web_link": "Increase quotas if necessary or revoke running workloads.",
-                "url": "/platformManagement/policies/products",
-                "url_title": "View quotas",
-                "reason_code_prefix": "3"
-              },
+                "short_description": "A monitor that checks whether a PVC is bound.",
+                "long_description": "PVC status phase: <Phase>"
+              }
             ]
           }
         }

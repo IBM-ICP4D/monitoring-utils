@@ -97,14 +97,14 @@ def get_pvc_claim_name(volumeName, podName, volumesList):
                 else:
                     return None
 
-## Record volume monitoring events into Influx DB through the watchdog post events API
+## Record volume monitoring events into a database through the watchdog post events API
 def record_events(events):
     url = 'https://'+WATCHDOG_SVC+':'+WATCHDOG_PORT+'/zen-watchdog/v1/monitoring/events'
     with open(SECRET_PATH, 'r') as file:
         secret_header = file.read().replace('\n', '')
     headers = {'Content-type': 'application/json', 'secret': secret_header}
     json_string=json.dumps(events)
-    print("Data to be input into influx - ", events)
+    print("Data to be input into a database - ", events)
     # post call to zen-watchdog to record events
     r = requests.post(url, headers=headers, data=json_string, verify=False)
     print("Response code for events POST api",r.status_code)

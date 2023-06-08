@@ -1,135 +1,222 @@
 - [Introduction and Purpose](#introduction-and-purpose)
-- [Cloud pak for data Monitoring framework concepts](#cloud-pak-for-data-monitoring-framework-concepts)
-- [Questions to consider before you look further](#questions-to-consider-before-you-look-further)
-- [Introduce custom monitors](#introduce-custom-monitors)
-	- [Monitoring script](#monitoring-script)
-	- [Build Docker image](#build-docker-image)
-	- [Introduce Monitoring extensions](#introduce-monitoring-extensions)
+- [Cloud Pak for Data Monitoring Framework Concepts](#cloud-pak-for-data-monitoring-framework-concepts)
+- [Introduce Custom Monitors](#introduce-custom-monitors)
+- [Sample Monitor](#sample-monitor)
+  - [Sample - Monitor and Record PVC status](#sample---monitor-and-record-pvc-status)
+  - [Building the Docker Image for the Monitor](#building-the-docker-image-for-the-monitor)
+  - [Sample Extension Configmap for the Monitor](#sample-extension-configmap-for-the-monitor)
+- [Service Monitor Development Guidelines](#service-monitor-development-guidelines)
 
 
 ## Introduction and Purpose
 
 The intention behind this repo is to help users understand and enhance the monitoring feature by introducing sample scripts through custom monitors which would in turn help proactively address and alert of any potential issues before they turn critical.
 
-This particular readme focuses on setting up custom monitors. It takes you through the complete process of creating and introducing scripts into Cloud Pak for data instance that can monitor and report/persist state information into a time series DB. The Watchdog Alert manager then looks into these events to decide, in conjunction with associated alerting rules, to trigger alerts if needed. We highly recommend you understand the concepts behind the framework before delving further into the custom monitor tutorial.
+This particular readme focuses on setting up custom monitors. It takes you through the process of creating and introducing scripts into a Cloud Pak for Data instance that can monitor and report/persist state information into an internal database. The Watchdog Alert manager then looks into these events to decide, in conjunction with associated alerting rules, to trigger alerts if needed.
 
-![Setup](docs/setup.png)
+## Cloud Pak for Data Monitoring Framework Concepts
 
-## Cloud pak for data Monitoring framework concepts
+Please refer to the [following doc](docs/Monitoring.md) for extensive information on monitoring essentials.
 
-Please refer to the [following doc](docs/Monitoring.md) for extensive information on Monitoring essentials.
-
-## Questions to consider before you look further
-
-Alright, you've decided to enhance the monitoring framework by introducing custom monitors. Please take a few minutes to understand and help answer the following questions before you jump further.
-1. What are event types, alert types and alert profiles?
-2. Can you differentiate monitoring scripts with a Monitor?
-3. What resource are you planning to track? Does it need extended privileges like cluster roles? If yes, please refer to the Service Account documentation in the docs folder.
-4. What about authentication for tracking the resource, eg: Portworx volumes?
-
-## Introduce custom monitors
+## Introduce Custom Monitors
 
 Developers can set up custom monitors using the alerting framework.
 
-Monitors check the state of entities periodically and generate events that are stored in Metastore database. Administrators might be interested in node resource efficiency, memory quotas, license usage, user management events, and provisioning diagnostics. You can set up custom monitors that track resource usage against your target usage for the platform.
+Monitors check the state of entities periodically and generate events that are stored in the metastore database. Administrators might be interested in node resource efficiency, memory quotas, license usage, user management events, and provisioning diagnostics. You can set up custom monitors that track resource usage against your target usage for the platform.
 
 Monitors can be registered into Cloud Pak for Data through an extension configmap. The configmap has all the details that are needed to create a cron job, including the details of the script, the image to be used, the schedule for the cron job, and any environment variables. This ensures that the alerting framework has all the necessary information to create a cron job, monitor events frequently, and trigger alerts if and when needed.
 
+A monitor consists of:
+1.  A monitor application built and packaged into a docker image.
+    1.  The monitor logic can be written in any language.
+    2.  The monitor creates and sends events to the zen-watchdog monitoring component using a POST http request
+2.  A monitoring extension configmap that contains metadata for the monitor such as the event types for the monitor, and a definition for the monitor cronjob.
+3.  An optional alert type extension configmap, if the monitor has custom alert rules other than the default rules for "platform".
 
-IN PROGRESS:
-Document build script that would create the docker file with the included scripts 
+## Sample Monitor
 
-### Monitoring script
+Here follows a sample monitor script which tracks PVCs and reports events based on the status. If a PVC is bound, an "info" is registered for the PVC and a "critical" event is recorded for "unbound" or "failed" PVC states.  
 
-First step in the process would be to develop a script that helps monitor the resource and send the state of the resource to Influx DB, using a zen-watchdog API.
+Our monitor will be based on Python 3.8 and we'll be using the Kubernetes Python SDK to interact with the cluster. 
 
-The following sample script tracks persistent volume claims and reports events based on the status. If a PVC is bound, an info is registered for the PVC. If a PVC is in an unbound or failed state, a critical event is recorded. This monitor is based on Python 3.7 and uses the Kubernetes Python SDK to interact with the cluster.
+The following tutorial assumes you'll be using your own image and details steps from building the script, to the docker file needed to run and finally the extension configmap needed to ensure this is included and run as part of the alerting framework. 
 
-The following script uses the in-cluster config to authenticate to Kubernetes and access the resources. 
+### Sample - Monitor and Record PVC status
+
+The following script uses the in cluster config to authenticate to kubernetes and access the resources. By default you have access to the following volumes:
+* _zen-service-broker-secret_ 
+
+The following environment variables are made available as part of the cronjob initialization 
+* _ICPD_CONTROLPLANE_NAMESPACE_  - the control plane namespace  
+
+The python script below lists PVCs and generates events based on its state. All non-Bound PVCs are recorded with critical severity. 
+The events are sent as a json array to the POST events endpoint (auth with the service broker token). Check [POST Events](docs/Monitoring.md#post-events) for more information.
+
+**Python app**
 
 ```
-By default, all setups allow access to the following volumes:
-
- 1. User-home-pvc - location for the scripts under `/user-home/monitoring/scripts`
- 2. Zen-service-broker-secret - Auth against the zen-watchdog API for sending resource events.
- 
-The following environment variables are also made available as part of the cron job initialization:
-
-ICPD_CONTROLPLANE_NAMESPACE - The control plane namespace.
+pvc-monitor/ 
+  pvc-monitor.py
+  requirements.txt
+  Dockerfile
 ```
 
-The following Python script lists PVCs and generates events based on their state. All non-bound PVCs are recorded with critical severity. The events are sent as a JSON array to the POST events endpoint, authorized with the service broker token.
+* `pvc-monitor.py` is the monitor code that is called when the monitor cronjob runs
+* `Dockerfile` is used for building the docker image for the monitor
+* Required Python packages are listed in the `requirements.txt`
 
-```python
-import os 
-import requests 
-import json from kubernetes 
-import client, config, watch 
-def main(): 
-# setup the namespace 
-	ns = os.environ.get('ICPD_CONTROLPLANE_NAMESPACE') 
-if ns is None: 
-	ns = "" 
-monitor_type = "sample-monitor" 
-event_type = "check-pvc-status" 
-# configure client 
-config.load_incluster_config() 
-api = client.CoreV1Api() 
 
-# configure post request and  set secret headers 
-url = 'https://zen-watchdog-svc:4444/zen-watchdog/v1/monitoring/events' 
-with open('/var/run/sharedsecrets/token', 'r') as file: 
-	secret_header = file.read().replace('\n', '') 
-headers = {'Content-type': 'application/json', 'secret': secret_header} 
+**pvc-monitor.py**
 
-# Print PVC list, set status as critical for unbound or failed pvc 
-pvcs = api.list_namespaced_persistent_volume_claim(namespace=ns, watch=False) 
-events = [] 
-for pvc in pvcs.items: 
-	severity = "info"  
-	print(pvc.status.phase) 
-	if pvc.status.phase != 'Bound': 
-		severity = "critical" 
-	#The metadata field needs to be in <key1:value1,key2:vaue2> format to be easily absorbed for prometheus consumption.
-	#The keys(key1,key2) is also referenced as part of the property "long_description" in alert monitor extension to be available for viewing in the UI. Please refer to the 
-	metadata = "Avaialble=10,Unavailable=5"  
-	data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name} 
-	events.append(data) 
-json_string = json.dumps(events) 
-# post call to zen-watchdog to record events 
-r = requests.post(url, headers=headers, data=json_string, verify=False) 
-print(r.status_code) 
+````python
+import os
+import requests
+import json
+from kubernetes import client, config, watch
+def main():
+    # setup the namespace
+    ns = os.environ.get('ICPD_CONTROLPLANE_NAMESPACE')
+    if ns is None:
+        ns = ""
+    monitor_type = "sample-monitor"
+    event_type = "check-pvc-bound"
+
+    # configure client
+    config.load_incluster_config()
+    api = client.CoreV1Api()
+
+    # configure post request and set secret headers
+    url = 'https://zen-watchdog-svc:4444/zen-watchdog/v1/monitoring/events'
+    with open('/var/run/sharedsecrets/token', 'r') as file:
+        secret_header = file.read().replace('\n', '')
+    headers = {'Content-type': 'application/json', 'secret': secret_header}
+
+    # Print PVC list, set status as critical for unbound or failed pvc
+    pvcs = api.list_namespaced_persistent_volume_claim(namespace=ns, watch=False)
+    events = []
+    for pvc in pvcs.items:
+        severity = "info"
+        print("pvc {}: {}".format(pvc.metadata.name, pvc.status.phase))
+        if pvc.status.phase != 'Bound':
+            severity = "critical"
+        metadata = "{}={}".format("Phase", str(pvc.status.phase))
+        data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name}
+        events.append(data)
+    json_string = json.dumps(events)
+
+    # post call to zen-watchdog to record events
+    r = requests.post(url, headers=headers, data=json_string, verify=False)
+    print("status code: {}".format(r.status_code))
+
 if __name__ == '__main__': 
-main()
+    main()
+````
+
+**Docker File**
+
+```
+# set base image (host OS) 
+FROM python:3.8 
+RUN mkdir /pvc-monitor 
+
+# set the working directory in the container 
+WORKDIR /pvc-monitor 
+ADD . /pvc-monitor 
+
+# install dependencies 
+RUN pip install -r requirements.txt 
+
+# command to run on container start 
+CMD [ "python", "./pvc_check.py" ] 
 ```
 
-This and all other scripts would need to be part of the `scripts` folder before you start building the docker image.
+**requirements.txt**
+```
+kubernetes==11.0.0 
+```
 
-### Build Docker image
+### Building the Docker Image for the Monitor
 
-This step involves creating docker image which includes the monitoring scripts localted under the `scripts` folder and also contains the corresponding utils needed to run the scripts.
+Once the above structure is in place, we can build the docker image using, 
 
-The dockerfile is located under the `build` folder. It's job is to ensure the following -
+`podman build -f Dockerfile -t pvc-monitor:latest .` 
 
-1. Ensure all scripts are uploaded to the `user-home/monitoring/scripts` folder
-2. Introduce python and all required packages listed in the `requirements.txt` file
-3. Run the `run_scripts.sh` file on startup. 
+Finally, let's tag and push the image into the openshift registry so that it can be accessed through the alerting cronjob. 
 
-To build the docker image, run the following command from inside the `build` directory.
-`docker build .`
+`podman login <docker-registry> -u kubeadmin -p $(oc whoami -t) --tls-verify=false`
 
-This would create the docker ifle 
+`podman tag <docker-image-id> <docker-registry>/<namespace>/pvc-monitor:latest`
 
-Once the docker image is ready, it's time to upload it to the registry. The steps to ensure that are as follows:
+`podman push <docker-registry>/<namespace>/pvc-monitor:latest`
 
-1. Docker login to the registry
-`docker login <docker-registry>`
-2. Tag the image 
-docker tag <image-digest> <>
-3. Push the image 
 
-### Introduce Monitoring extensions
+### Sample Extension Configmap for the Monitor
 
-This is the final step in the process. Here we upload the required monitor, alert type and profile extensions that would form the basis of the custom monitor. 
+Once we have the image pushed, we can now create an extension configmap pointing to the above configuration. This will ensure that the alert manager picks it up and creates a cronjob, thereby ensuring the script is run at scheduled intervals. 
 
-IN PROGRESS: a script that installs the extensions into the CPD instance. The Watchdog alert manager(WAM) would then read the extensions and create a cronjob that uses the above docker image to monitor and report resource status to Influx DB.
+```
+oc apply -f sample-monitor-extension.yaml
+```
+
+sample-monitor-extension.yaml
+
+````yaml
+apiVersion: v1 
+kind: ConfigMap 
+metadata: 
+  name: sample-monitor-extension
+  labels: 
+    icpdata_addon: "true" 
+    icpdata_addon_version: "1.0.0" 
+data: 
+  extensions: |
+      [
+        {
+          "extension_point_id": "zen_alert_monitor",
+          "extension_name": "zen_alert_monitor_sample",
+          "display_name": "Sample alert monitor",
+          "details": {
+            "name":"sample-monitor",
+            "image": "image-registry.openshift-image-registry.svc:5000/zen/pvc-monitor:latest",
+            "schedule": "*/10 * * * *",
+            "event_types": [
+              {
+                "name": "check-pvc-bound",
+                "simple_name": "PVC bound check",
+                "alert_type": "platform",
+                "short_description": "A monitor that checks whether a PVC is bound.",
+                "long_description": "PVC status phase: <Phase>"
+              }
+            ]
+          }
+        }
+      ]
+````
+
+Once the extension configmap is created, the Watchdog alert manager(WAM) would then read the extensions and create a cronjob that uses the docker image to monitor and report resource status.
+
+
+For additional guidelines, see [Service Monitor Development Guidelines](#service-monitor-development-guidelines)
+
+## Service Monitor Development Guidelines
+
+* During development, if there are changes to the monitor extension configmap, update the icpdata_addon_version so that zen-watcher detects the new changes.  For example, if the icpdata_addon_version was originally "5.0.0", increment it to some higher value like "5.1.0".
+```
+icpdata_addon_version: 5.1.0
+```
+* After the monitor extension configmap is created, check the log of the ```zen-watcher-xxx``` pod to see if the extension was successfully detected, and that there are no parsing errors.
+* After the monitor extension configmap is created, monitor cronjobs are not immediately created by zen-watchdog, and may take up to 10 minutes.  For development, change schedule of the ```watchdog-alert-monitoring-cronjob``` cronjob from 10 minutes to 1 minute by editing it.  This is so the monitor cronjob can be created sooner.
+* When the monitor cronjob is created, manually change the imagePullPolicy from IfNotPresent to Always for development purposes.  This ensures the monitor cronjob is running with latest image that was pushed to the image registry.
+* For troubleshooing, edit the monitor cronjob and change the successfulJobsHistoryLimit and failedJobsHistoryLimit from 0 to 1.  This is so one cronjob pod is kept around, which allows you to see the cronjob pod log for debugging.  In addition, consider changing the schedule to 1 minute so the cronjob is run more often for debugging purposes.
+* The OpenShift internal registry is used here as an example for development purposes.  For production, the image can be made available in any accessible image registry.
+* During development, if there are changes to an event type (e.g. long_description) in the monitor extension configmap and the configmap is applied, the event type definitions are not automatically updated in the internal metastore database.  The events will still use stale information when they are displayed in the CPD Monitoring Events page.  To update event types, delete the existing rows in the event_types table, and restart the zen-watchdog pod which will re-populate the table.  For example,
+```
+oc rsh zen-metastore-edb-1
+psql -U postgres -d zen
+delete from event_types;
+\q
+exit
+
+oc delete po -l component=zen-watchdog
+```
+
