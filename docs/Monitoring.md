@@ -23,6 +23,7 @@
     - [POST Events](#post-events)
     - [POST Events Sample](#post-events-sample)
     - [Zen service broker secret](#zen-service-broker-secret)
+    - [Events Body](#events-body)
 # Monitoring and Alerting in Cloud Pak for Data
 
 IBM Cloud Pak for Data provides a monitoring and alerting framework that you can use to monitor the state of the platform and set up events to alert based on thresholds.
@@ -235,6 +236,8 @@ curl -X POST -k https://zen-watchdog-svc:4444/v1/monitoring/events \
 ### Zen service broker secret
 
 The post calls are authenticated in zen-watchdog using the zen service broker token. The alert manager mounts the secret volume to all the monitor cronjobs, hence no additional work is needed as part of the monitor setup. The secret token is available under "/var/run/sharedsecrets/token" The value of this token is to be retrieved and passed as the value for the secret header in the above POST call. 
+
+### Events Body
 
 The body of the json included in the POST is as follows -  
 
