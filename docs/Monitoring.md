@@ -14,6 +14,7 @@
     - [Overview](#overview)
     - [Monitor Cronjob Metadata](#monitor-cronjob-metadata)
     - [Event Types](#event-types)
+      - [Standarized Variables Names in long\_description](#standarized-variables-names-in-long_description)
   - [Alert Type Extension](#alert-type-extension)
   - [Alert Profile Extension](#alert-profile-extension)
     - [SMTP](#smtp)
@@ -130,6 +131,12 @@ Each monitor can be associated with one or more event types. These event types n
      }
   ]
 ```
+
+#### Standarized Variables Names in long_description
+By convention, the following variables should be used in the long_description when applicable.  This allows events to be correlated by common fields.
+* \<addon_id\> - addon id for the event
+* \<namespace\> - namespace for the event
+
 
 [Sample for alert monitor](./extensions/alert_monitor.yaml)
 
