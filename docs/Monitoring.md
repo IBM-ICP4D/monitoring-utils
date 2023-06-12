@@ -93,16 +93,18 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
 
 ```
 { 
-  "image"         - Image to be used. Format "<docker-registry>/<image_name>:<tag>.
-  "name"          - Name of the monitor.
-  "schedule"      - Schedule for the cronjob, in cron expression format
-  "command"       - Command to be run when cronjob gets scheduled
-  "args"          - Arguments for the above command
-  "env_vars"      - Environment variables
-  "working_dir"   - Working directory
-  "event_types"   - Types of events that are being monitored. (see below)
-  "volumes"       - Volumes
-  "volume_mounts" - Volume mounts
+  "image"           - Image to be used. Format "<docker-registry>/<image_name>:<tag>.
+  "name"            - Name of the monitor.  Underscores are not allowed.  The name of the monitor cronjob will be name + "-cronjob"
+  "schedule"        - Schedule for the cronjob, in cron expression format
+  "command"         - Command to be run when cronjob gets scheduled
+  "args"            - Arguments for the above command
+  "service_account" - Service account for the monitor cronjob
+  "env_vars"        - Environment variables
+  "working_dir"     - Working directory
+  "event_types"     - Types of events that are being monitored. (see below)
+  "volumes"         - Volumes
+  "volume_mounts"   - Volume mounts
+  "resources"       - Resource requirements for the monitor cronjob.
 } 
 ```
 
@@ -113,6 +115,54 @@ volumeMounts:
   mountPath: /var/run/sharedsecrets 
   name: zen-service-broker-secret 
 ````
+
+Extenion Configmap Example:
+```
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: my-sample-extension
+  labels:
+    icpdata_addon: 'true'
+    icpdata_addon_version: 4.3.0
+data:
+  extensions: |
+    [
+      {
+        "extension_point_id": "zen_alert_monitor",
+        "extension_name": "my_sample_service_monitor",
+        "display_name": "My Sample Service Monitor",
+        "details": {
+          "name": "mysampleservicemonitor",
+          "image": "icr.io/cpopen/cpd/my-sample-monitor:latest",
+          "schedule": "*/10 * * * *",
+          "command": ["sh"],
+          "args": ["/opt/ansible/bin/cp4d-monitors/run_scripts.sh"],
+          "resources": {
+            "limits": {
+              "cpu": "86m",
+              "ephemeral-storage": "151Mi",
+              "memory": "186Mi"
+            },
+            "requests": {
+              "cpu": "21m",
+              "ephemeral-storage": "31Mi",
+              "memory": "121Mi"
+            }
+          },
+          "event_types": [
+            {
+              "name": "global_connections_count",
+              "simple_name": "Number of CP4D Platform connections",
+              "alert_type": "platform",
+              "short_description": "Number of CP4D Platform connections",
+              "long_description": "Number of CP4D Platform connections: <global_connections_count>",
+            }
+          ]
+        }
+      }
+    ]
+```
 
 ### Event Types
 Each monitor can be associated with one or more event types. These event types need to be explicitly stated in the above monitor configuration. For example, 
