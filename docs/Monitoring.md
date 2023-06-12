@@ -104,7 +104,7 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
   "event_types"     - Types of events that are being monitored. (see below)
   "volumes"         - Volumes
   "volume_mounts"   - Volume mounts
-  "resources"       - Resource requirements for the monitor cronjob.
+  "resources"       - Resource requirements for the monitor cronjob.  Avaialble starting in CPD 4.7.
 } 
 ```
 
