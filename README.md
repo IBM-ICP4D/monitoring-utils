@@ -100,10 +100,9 @@ def main():
         if pvc.status.phase != 'Bound':
             severity = "critical"
         metadata = "{}={}".format("Phase", str(pvc.status.phase))
-        addon_id = ""
+        data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name, "namespace": pvc.metadata.namespace}
         if "icpdsupport/addOnId" in pvc.metadata.labels:
-          addon_id = pvc.metadata.labels["icpdsupport/addOnId"]
-        data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name, "addon_id": addon_id, "namespace": pvc.metadata.namespace}
+          data["addon_id"] = pvc.metadata.labels["icpdsupport/addOnId"]
         events.append(data)
     json_string = json.dumps(events)
     print("events: {}".format(json_string))
