@@ -100,9 +100,13 @@ def main():
         if pvc.status.phase != 'Bound':
             severity = "critical"
         metadata = "{}={}".format("Phase", str(pvc.status.phase))
-        data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name}
+        addon_id = ""
+        if "icpdsupport/addOnId" in pvc.metadata.labels:
+          addon_id = pvc.metadata.labels["icpdsupport/addOnId"]
+        data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name, "addon_id": addon_id, "namespace": pvc.metadata.namespace}
         events.append(data)
     json_string = json.dumps(events)
+    print("events: {}".format(json_string))
 
     # post call to zen-watchdog to record events
     r = requests.post(url, headers=headers, data=json_string, verify=False)

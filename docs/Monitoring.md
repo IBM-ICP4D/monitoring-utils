@@ -14,7 +14,6 @@
     - [Overview](#overview)
     - [Monitor Cronjob Metadata](#monitor-cronjob-metadata)
     - [Event Types](#event-types)
-      - [Standarized Variables Names in long\_description](#standarized-variables-names-in-long_description)
   - [Alert Type Extension](#alert-type-extension)
   - [Alert Profile Extension](#alert-profile-extension)
     - [SMTP](#smtp)
@@ -182,12 +181,6 @@ Each monitor can be associated with one or more event types. These event types n
   ]
 ```
 
-#### Standarized Variables Names in long_description
-By convention, the following variables should be used in the long_description when applicable.  This allows events to be correlated by common fields.
-* \<addon_id\> - addon id for the event
-* \<namespace\> - namespace for the event
-
-
 [Sample for alert monitor](./extensions/alert_monitor.yaml)
 
 ## Alert Type Extension
@@ -306,6 +299,8 @@ The body of the json included in the POST is as follows -
     "severity"     -  One of { "critical", "warning" or "info" }  (string)
     "reference"    -  Object reference  (string)
     "metadata"     -  Comma-separated, key-value pair where the key is a variable denoted by <...> in the long description.  The value replaces the variable in the event.  (string)
+    "addon_id"     -  Addon id for the object reference (string).  Available starting in Zen 5.1 / CPD 4.8.
+    "namespace"    -  Namespace for the object reference (string).  Available starting in Zen 5.1 / CPD 4.8.
   }
 ]
 ```
@@ -335,14 +330,18 @@ Test result CP4D Platform connection: 1
     "event_type" : "check-replica-status",
     "severity" : "critical",
     "reference" : "metastore-db",
-    "metadata" : "Unavailable=2"
+    "metadata" : "Unavailable=2",
+    "addon_id": "zen-lite",
+    "namespace": zen
   },
   {
     "monitor_type" : "diagnostics",
     "event_type" : "check-replica-status",
     "severity" : "info",
     "reference" : "zen-core",
-    "metadata" : "Unavailable=0"
+    "metadata" : "Unavailable=0",
+    "addon_id": "zen-lite",
+    "namespace": zen
   }
 ]
 ```
