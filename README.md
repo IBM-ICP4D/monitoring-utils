@@ -101,7 +101,7 @@ def main():
             severity = "critical"
         metadata = "{}={}".format("Phase", str(pvc.status.phase))
         data = {"monitor_type":monitor_type, "event_type":event_type, "severity":severity, "metadata":metadata, "reference":pvc.metadata.name, "namespace": pvc.metadata.namespace}
-        if "icpdsupport/addOnId" in pvc.metadata.labels:
+        if pvc.metadata.labels is not None and "icpdsupport/addOnId" in pvc.metadata.labels:
           data["addon_id"] = pvc.metadata.labels["icpdsupport/addOnId"]
         events.append(data)
     json_string = json.dumps(events)
