@@ -92,19 +92,19 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
 
 ```
 { 
-  "image"           - Image to be used. Format "<docker-registry>/<image_name>:<tag>.
-  "name"            - Name of the monitor.  Underscores are not allowed.  The name of the monitor cronjob will be name + "-cronjob"
-  "schedule"        - Schedule for the cronjob, in cron expression format
-  "command"         - Command to be run when cronjob gets scheduled
-  "args"            - Arguments for the above command
-  "service_account" - Service account for the monitor cronjob
-  "env_vars"        - Environment variables
-  "working_dir"     - Working directory
-  "event_types"     - Types of events that are being monitored. (see below)
-  "volumes"         - Volumes
-  "volume_mounts"   - Volume mounts
-  "resources"       - Resource requirements for the monitor cronjob.  Avaialble starting in CPD 4.7.
-} 
+  "image"           - Image to be used (string). Format is "<docker-registry>/<image_name>:<tag>.
+  "name"            - Name of the monitor (string, required).  Must be unique per CPD instance.  Underscores are not allowed.  The name of the monitor cronjob will be <name + "-cronjob"> if applicable.
+  "schedule"        - Schedule for the cronjob, in cron expression format (string).  Currently, only every 10th minute (*/10 * * * *) is supported.
+  "command"         - Command to be run when cronjob gets scheduled (array of strings)
+  "args"            - Arguments for the above command (array of strings)
+  "service_account" - Service account for the monitor cronjob (string)
+  "env_vars"        - Environment variables (array of EnvVar objects)
+  "working_dir"     - Working directory (string)
+  "event_types"     - Types of events that are being monitored (array of EventType objects). (see below)
+  "volumes"         - Volumes (array of Volume objects)
+  "volume_mounts"   - Volume mounts  (array of VolumeMount objects).  Available starting in CPD 4.8. 
+  "resources"       - Resource requirements for the monitor cronjob (ResourceRequirements object).  Available starting in CPD 4.7.
+}
 ```
 
 By default, the zen-service-broker-secret volumes are mounted to the cronjob (no need to mount them again as part of the above config setup). They're available as follows: 

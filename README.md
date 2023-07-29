@@ -207,14 +207,15 @@ For additional guidelines, see [Service Monitor Development Guidelines](#service
 ```
 icpdata_addon_version: 5.1.0
 ```
+An alternative is to delete and recreate the extension configmap.
 * After the monitor extension configmap is created, check the log of the ```zen-watcher-xxx``` pod to see if the extension was successfully detected, and that there are no parsing errors.
 * After the monitor extension configmap is created, monitor cronjobs are not immediately created by zen-watchdog, and may take up to 10 minutes.  For development, change schedule of the ```watchdog-alert-monitoring-cronjob``` cronjob from 10 minutes to 1 minute by editing it.  This is so the monitor cronjob can be created sooner.
-* When the monitor cronjob is created, manually change the imagePullPolicy from IfNotPresent to Always for development purposes.  This ensures the monitor cronjob is running with latest image that was pushed to the image registry.
-* For troubleshooing, edit the monitor cronjob and change the successfulJobsHistoryLimit and failedJobsHistoryLimit from 0 to 1.  This is so one cronjob pod is kept around, which allows you to see the cronjob pod log for debugging.  In addition, consider changing the schedule to 1 minute so the cronjob is run more often for debugging purposes.
+* When the monitor cronjob is created, manually change the imagePullPolicy from IfNotPresent to Always for development purposes.  This ensures the monitor cronjob is running with the latest image that was pushed to the image registry.
+* For troubleshooting, edit the monitor cronjob and change the successfulJobsHistoryLimit and failedJobsHistoryLimit from 0 to 1.  This is so one cronjob pod is kept around, which allows you to see the cronjob pod log for debugging.  In addition, consider changing the schedule to 1 minute so the cronjob is run more often for debugging purposes.
 * The OpenShift internal registry is used here as an example for development purposes.  For production, the image can be made available in any accessible image registry.
 * During development, if there are changes to an event type (e.g. long_description) in the monitor extension configmap and the configmap is applied, the event type definitions are not automatically updated in the internal metastore database.  The events will still use stale information when they are displayed in the CPD Monitoring Events page.  To update event types, delete the existing rows in the event_types table, and restart the zen-watchdog pod which will re-populate the table.  For example,
 ```
-oc rsh zen-metastore-edb-1
+PRIMARY_POD=`oc get cluster zen-metastore-edb -o jsonpath="{.status.currentPrimary}"` && oc rsh $PRIMARY_POD
 psql -U postgres -d zen
 delete from event_types;
 \q
@@ -222,4 +223,7 @@ exit
 
 oc delete po -l component=zen-watchdog
 ```
-
+* To verify that your custom events are being correctly generated, look for your events in the "Alerts and events" page.  In the CPD Console UI, go to
+```
+Administration -> Monitoring -> Click "->" arrow next to Alerts in the upper left
+```
