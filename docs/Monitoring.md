@@ -104,6 +104,7 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
   "volumes"         - Volumes (array of Volume objects)
   "volume_mounts"   - Volume mounts  (array of VolumeMount objects).  Available starting in CPD 4.8. 
   "resources"       - Resource requirements for the monitor cronjob (ResourceRequirements object).  Available starting in CPD 4.7.
+  "addon_id"        - Addon ID for this monitor.  New in CPD 4.8.  This can be a CPD service addon id, or "all" if the monitor applies to all services.
 }
 ```
 
@@ -283,6 +284,16 @@ curl -X POST -k https://zen-watchdog-svc:4444/v1/monitoring/events \
 -d '<event_body>' 
 ````
 
+Start a session inside a pod that has curl and execute the POST API.
+```
+curl -X POST https://zen-watchdog-svc:4444/zen-watchdog/v1/monitoring/events -k -H "secret: <token>" -H "Content-Type: application/json" -d '[{"monitor_type" : "diagnostics", "event_type" : "service-health-check","severity" : "info", "reference" : "My Sample Service", "metadata" : "status=healthy,message=testmessage", "addon_id" : "sampleaddon", "namespace" : "zen"}]'
+```
+
+The secret token can be obtained from
+```
+oc get -n zen secrets/zen-service-broker-secret --template={{.data.token}} | base64 -d
+```
+
 ### Zen service broker secret
 
 The post calls are authenticated in zen-watchdog using the zen service broker token. The alert manager mounts the secret volume to all the monitor cronjobs, hence no additional work is needed as part of the monitor setup. The secret token is available under "/var/run/sharedsecrets/token" The value of this token is to be retrieved and passed as the value for the secret header in the above POST call. 
@@ -294,10 +305,10 @@ The body of the json included in the POST is as follows -
 ```
 [
   {
-    "monitor_type" -  Name of the monitor (string)
+    "monitor_type" -  Name of the monitor where the event type is defined (string)
     "event_type"   -  Event type (string)
     "severity"     -  One of { "critical", "warning" or "info" }  (string)
-    "reference"    -  Object reference  (string)
+    "reference"    -  Object that is being monitored (string)
     "metadata"     -  Comma-separated, key-value pair where the key is a variable denoted by <...> in the long description.  The value replaces the variable in the event.  (string)
     "addon_id"     -  Addon id for the object reference (string).  Available starting in Zen 5.1 / CPD 4.8.
     "namespace"    -  Namespace for the object reference (string).  Available starting in Zen 5.1 / CPD 4.8.
