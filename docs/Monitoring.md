@@ -94,7 +94,7 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
 { 
   "image"           - Image to be used (string). Format is "<docker-registry>/<image_name>:<tag>.
   "name"            - Name of the monitor (string, required).  Must be unique per CPD instance.  Underscores are not allowed.  The name of the monitor cronjob will be <name + "-cronjob"> if applicable.
-  "schedule"        - Schedule for the cronjob, in cron expression format (string).  Currently, only every 10th minute (*/10 * * * *) is supported.
+  "schedule"        - Schedule for the cronjob, in cron expression format (string).  Currently, only every 10th minute (*/10 * * * *) is supported.  Value may be overridden by the CPD monitoring component.
   "command"         - Command to be run when cronjob gets scheduled (array of strings)
   "args"            - Arguments for the above command (array of strings)
   "service_account" - Service account for the monitor cronjob (string)

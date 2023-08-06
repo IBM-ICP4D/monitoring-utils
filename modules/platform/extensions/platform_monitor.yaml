@@ -17,7 +17,7 @@ data:
           "details": {
             "name":"platform",
             "image": "image-registry.openshift-image-registry.svc:5000/zentwo/pvc-monitor:v1",
-            "schedule": "*/3 * * * *",
+            "schedule": "*/10 * * * *",
             "event_types": [
               {
                 "name": "check-volume-status",
