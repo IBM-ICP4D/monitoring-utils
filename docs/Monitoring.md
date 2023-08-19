@@ -104,7 +104,8 @@ The monitor part of the configmap provides metadata for the cronjob. The extensi
   "volumes"         - Volumes (array of Volume objects)
   "volume_mounts"   - Volume mounts  (array of VolumeMount objects).  Available starting in CPD 4.8. 
   "resources"       - Resource requirements for the monitor cronjob (ResourceRequirements object).  Available starting in CPD 4.7.
-  "addon_id"        - Addon ID for this monitor.  New in CPD 4.8.  This can be a CPD service addon id, or "all" if the monitor applies to all services.
+  "addon_id"        - Addon ID for this monitor (string).  New in CPD 4.8.  This can be a CPD service addon id, or "all" if the monitor applies to all services.
+  "description"     - A description for the monitor (string).  New in CPD 4.8.
 }
 ```
 
@@ -134,6 +135,7 @@ data:
         "display_name": "My Sample Service Monitor",
         "details": {
           "name": "mysampleservicemonitor",
+          "description": "sample monitor description",
           "image": "icr.io/cpopen/cpd/my-sample-monitor:latest",
           "schedule": "*/10 * * * *",
           "command": ["sh"],
