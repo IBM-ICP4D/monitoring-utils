@@ -130,7 +130,7 @@ ADD . /pvc-monitor
 RUN pip install -r requirements.txt 
 
 # command to run on container start 
-CMD [ "python", "./pvc_check.py" ] 
+CMD [ "python", "./pvc-monitor.py" ] 
 ```
 
 **requirements.txt**
